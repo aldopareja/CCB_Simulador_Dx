@@ -52,5 +52,20 @@ pesosFinales=na.locf(dcast(pesosFinales,newRow~Tipo,value.var = c("Eje.Pregunta.
 #I'm going to do it with the classical approach of Dt
 
 countAns=preg[,list(conteo=.N),by='Eje_tematico,pregunta,Respuesta'][
-              ,porcentaje:=conteo/sum(conteo),by='Eje_tematico,pregunta'][
-              order(Eje_tematico,pregunta)]
+              ,porcentaje:=paste0(100*round(conteo/sum(conteo),2),'%')
+              ,by='Eje_tematico,pregunta'][
+              order(Eje_tematico,pregunta,Respuesta)]
+#no me gusta el orden, pero podemos usar los pesos para organizarlo mejor
+countAns=merge(countAns[,llave:=paste(Eje_tematico,pregunta,Respuesta)],
+             pesosFinales[,list(newRow=newRow,
+                                llave=paste(Eje.Pregunta.Respuesta_Eje,
+                                            Eje.Pregunta.Respuesta_Pregunta,
+                                            Eje.Pregunta.Respuesta_Respuesta))],
+             by = "llave")[order(newRow)][,`:=`(llave=NULL,
+                                                newRow=NULL)]
+require(gridExtra)
+pdf("visualizaciones/distribucionRespuestas.pdf",width = 20,height = 12)
+grid.table(countAns,rows=NULL)
+dev.off()
+#ahora escribamos un xlsx
+write.xlsx(countAns,"visualizaciones/distribucionPregRespDx.xlsx",asTable = T)
