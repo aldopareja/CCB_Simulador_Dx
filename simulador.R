@@ -47,3 +47,10 @@ pesosFinales=pesos
 pesosFinales[,rowType:=match(Tipo,c("Eje","Pregunta","Respuesta"))][
              ,newRow:=cumsum(diff(c(0,rowType))<=0)]
 pesosFinales=na.locf(dcast(pesosFinales,newRow~Tipo,value.var = c("Eje.Pregunta.Respuesta","p")))
+
+#I think this was not important since I only need to count the answers
+#I'm going to do it with the classical approach of Dt
+
+countAns=preg[,list(conteo=.N),by='Eje_tematico,pregunta,Respuesta'][
+              ,porcentaje:=conteo/sum(conteo),by='Eje_tematico,pregunta'][
+              order(Eje_tematico,pregunta)]
